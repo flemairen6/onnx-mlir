@@ -36,7 +36,7 @@ Value getShapedZero(
         loc, rewriter.getZeroAttr(elemType));
     Value shape = rewriter.create<shape::ShapeOfOp>(loc, inp);
     broadcastedZero = rewriter.create<stablehlo::DynamicBroadcastInDimOp>(
-        loc, inpType, zero, shape, rewriter.getI64TensorAttr({}));
+        loc, inpType, zero, shape, rewriter.getDenseI64ArrayAttr({}));
   }
   return broadcastedZero;
 }
@@ -62,7 +62,7 @@ llvm::SmallVector<Value, 4> getBroadcastedOperands(Operation *op,
         RankedTensorType::get(outputShapedType.getShape(), elementType);
     Value broadcast = rewriter.create<stablehlo::DynamicBroadcastInDimOp>(loc,
         broadcastedOutputType, operand, resultExtents,
-        rewriter.getI64TensorAttr(broadcastDimensions));
+        rewriter.getDenseI64ArrayAttr(broadcastDimensions));
     broadcastedOperands.push_back(broadcast);
   }
   return broadcastedOperands;
@@ -89,7 +89,7 @@ llvm::SmallVector<Value, 4> getBroadcastedOperands(
         RankedTensorType::get(outputShapedType.getShape(), elementType);
     Value broadcast = rewriter.create<stablehlo::DynamicBroadcastInDimOp>(loc,
         broadcastedOutputType, operand, resultExtents,
-        rewriter.getI64TensorAttr(broadcastDimensions));
+        rewriter.getDenseI64ArrayAttr(broadcastDimensions));
     broadcastedOperands.push_back(broadcast);
   }
   return broadcastedOperands;
@@ -105,13 +105,6 @@ ElementsAttr getElementAttributeFromConstValue(Value value) {
       return constantOp.getValueAttr().dyn_cast<ElementsAttr>();
   }
   return nullptr;
-}
-
-DenseIntElementsAttr GetI64ElementsAttr(
-    ArrayRef<int64_t> values, Builder *builder) {
-  RankedTensorType ty = RankedTensorType::get(
-      {static_cast<int64_t>(values.size())}, builder->getIntegerType(64));
-  return DenseIntElementsAttr::get(ty, values);
 }
 
 namespace {

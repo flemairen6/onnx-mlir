@@ -49,17 +49,17 @@ LogicalResult verifyOp(Operation *op) {
   }
 }
 
-// Variant of RewriterBase::updateRootInPlace(op) which finalizes/cancels the
+// Variant of RewriterBase::modifyOpInPlace(op) which finalizes/cancels the
 // root update if the callback succeeds/fails.
 template <typename Callback = std::function<LogicalResult()>>
-LogicalResult tryUpdateRootInPlace(
+LogicalResult tryModifyOpInPlace(
     Operation *op, PatternRewriter &rewriter, Callback &&callback) {
-  rewriter.startRootUpdate(op);
+  rewriter.startOpModification(op);
   if (failed(callback())) {
-    rewriter.cancelRootUpdate(op);
+    rewriter.cancelOpModification(op);
     return failure();
   } else {
-    rewriter.finalizeRootUpdate(op);
+    rewriter.finalizeOpModification(op);
     return success();
   }
 }
@@ -69,7 +69,7 @@ LogicalResult tryUpdateRootInPlace(
 // Calls shapeInfOp.emitOpError() if there is any actual failure.
 LogicalResult inferShapes(
     ShapeInferenceOpInterface shapeInfOp, PatternRewriter &rewriter) {
-  return tryUpdateRootInPlace(shapeInfOp, rewriter, [&]() -> LogicalResult {
+  return tryModifyOpInPlace(shapeInfOp, rewriter, [&]() -> LogicalResult {
     OperationFingerPrint before(shapeInfOp);
     LogicalResult outcome = shapeInfOp.inferShapes([](Region &region) {});
     OperationFingerPrint after(shapeInfOp);

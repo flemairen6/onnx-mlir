@@ -94,7 +94,7 @@ struct ONNXMatMulOpLoweringToStablehlo : public ConversionPattern {
           llvm::to_vector<4>(llvm::seq<int64_t>(
               paddedRank - oneDPadA - aRank, paddedRank - oneDPadA));
       broadcastedA = rewriter.createOrFold<stablehlo::BroadcastInDimOp>(
-          loc, outputAType, A, rewriter.getI64VectorAttr(broadcastDimensions));
+          loc, outputAType, A, rewriter.getDenseI64ArrayAttr(broadcastDimensions));
     }
     Value broadcastedB;
     {
@@ -102,7 +102,7 @@ struct ONNXMatMulOpLoweringToStablehlo : public ConversionPattern {
           llvm::to_vector<4>(llvm::seq<int64_t>(
               paddedRank - oneDPadB - bRank, paddedRank - oneDPadB));
       broadcastedB = rewriter.createOrFold<stablehlo::BroadcastInDimOp>(
-          loc, outputBType, B, rewriter.getI64VectorAttr(broadcastDimensions));
+          loc, outputBType, B, rewriter.getDenseI64ArrayAttr(broadcastDimensions));
     }
     Value dotProduct;
     if (paddedRank > 2)

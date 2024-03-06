@@ -161,18 +161,12 @@ struct ONNXConvTransposeOpLoweringToStablehlo : public ConversionPattern {
 
     Value convResult = rewriter.create<stablehlo::ConvolutionOp>(loc,
         convOutputType, inputOperand, filterOperand,
-        DenseIntElementsAttr::get(
-            RankedTensorType::get({spatialRank}, rewriter.getI64Type()),
-            SmallVector<int64_t>(spatialRank, 1)),
+        rewriter.getDenseI64ArrayAttr({spatialRank}),
         DenseIntElementsAttr::get(
             RankedTensorType::get({spatialRank, 2}, rewriter.getI64Type()),
             flattenPaddings),
-        DenseIntElementsAttr::get(
-            RankedTensorType::get({spatialRank}, rewriter.getI64Type()),
-            strides),
-        DenseIntElementsAttr::get(
-            RankedTensorType::get({spatialRank}, rewriter.getI64Type()),
-            dilations),
+        rewriter.getDenseI64ArrayAttr(strides),
+        rewriter.getDenseI64ArrayAttr(dilations),
         nullptr, dimension_numbers, groupNum, 1, nullptr);
 
     Value padResult;
@@ -204,7 +198,7 @@ struct ONNXConvTransposeOpLoweringToStablehlo : public ConversionPattern {
       Value finalB;
       Value resultShape = rewriter.create<shape::ShapeOfOp>(loc, padResult);
       finalB = rewriter.create<stablehlo::DynamicBroadcastInDimOp>(loc,
-          outputType, biasOperand, resultShape, rewriter.getI64TensorAttr({1}));
+          outputType, biasOperand, resultShape, rewriter.getDenseI64ArrayAttr({1}));
       addBiasResult = rewriter.create<stablehlo::AddOp>(loc, padResult, finalB);
     }
 

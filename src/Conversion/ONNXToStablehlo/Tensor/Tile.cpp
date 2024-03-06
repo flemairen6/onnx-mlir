@@ -94,8 +94,7 @@ struct ONNXTileOpLoweringToStablehlo : public ConversionPattern {
     for (int64_t dim_idx = 0; dim_idx < inputRank; ++dim_idx) {
       broadcastDimensions.push_back(1 + 2 * dim_idx);
     }
-    DenseIntElementsAttr broadcast_dims_attr =
-        rewriter.getI64VectorAttr(broadcastDimensions);
+        
 
     Value out_dim_size_tensor = rewriter.create<stablehlo::ConcatenateOp>(loc,
         RankedTensorType::get(
@@ -106,7 +105,7 @@ struct ONNXTileOpLoweringToStablehlo : public ConversionPattern {
     RankedTensorType broadcast_type =
         RankedTensorType::get(broadcast_shape, elementType);
     Value broadcast = rewriter.create<stablehlo::DynamicBroadcastInDimOp>(
-        loc, broadcast_type, input, out_dim_size_tensor, broadcast_dims_attr);
+        loc, broadcast_type, input, out_dim_size_tensor, rewriter.getDenseI64ArrayAttr(broadcastDimensions));
 
     // %shape = [MS1, MS2]
     SmallVector<Value, 4> shape_values;
